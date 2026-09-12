@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISHANA Weather Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="weather-page">
+    <h1>ISHANA Weather Dashboard</h1>
+    <p>Live weather and forecast information based on your current location.</p>
+
+    <div class="weather-card">
+<button type="button" id="location-button" onclick="getLocation()">
+    📍 Use My Current Location
+</button>
+
+<p id="location-result"></p>
+<div id="weather-result">
+
+    <div class="current-weather">
+
+        <div class="weather-main">
+
+            <div class="big-weather-icon">🌦️</div>
+
+            <div>
+                <div class="weather-label">CURRENT CONDITIONS</div>
+                <div class="big-temperature">--°C</div>
+                <div class="weather-location">Waiting for location...</div>
+            </div>
+
+        </div>
+
+        <div class="weather-stats">
+
+            <div class="weather-stat">
+                <span>💧</span>
+                <strong id="humidity-value">--%</strong>
+                <small>Humidity</small>
+            </div>
+
+            <div class="weather-stat">
+                <span>🌧️</span>
+                <strong id="rainfall-value">-- mm</strong>
+                <small>Rainfall</small>
+            </div>
+
+            <div class="weather-stat">
+                <span>💨</span>
+                <strong id="wind-value">-- km/h</strong>
+                <small>Wind Speed</small>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="risk-panel">
+
+        <div class="risk-header">
+            <span>LANDSLIDE RISK</span>
+            <span id="risk-status">CALCULATING...</span>
+        </div>
+
+        <div class="risk-meter">
+            <div id="risk-fill"></div>
+        </div>
+
+        <p id="risk-message">
+            Analyzing current weather conditions...
+        </p>
+
+    </div>
+
+</div>
+
+<h2>7-Day Forecast</h2>
+<div id="forecast-result"></div>
+<small>Location names provided by OpenStreetMap contributors.</small>
+
+    <script>
+    function getWeatherIcon(code) {
+        if (code === 0) return "☀️";
+        if (code === 1) return "🌤️";
+        if (code === 2) return "⛅";
+        if (code === 3) return "☁️";
+        if (code === 45 || code === 48) return "🌫️";
+        if (code >= 51 && code <= 57) return "🌦️";
+        if (code >= 61 && code <= 67) return "🌧️";
+        if (code >= 71 && code <= 77) return "❄️";
+        if (code >= 80 && code <= 82) return "🌦️";
+        if (code === 85 || code === 86) return "🌨️";
+        if (code >= 95) return "⛈️";
+        return "🌦️";
+    }
+
+    function updateRisk(totalRainfall) {
+        const riskStatus = document.getElementById("risk-status");
+        const riskFill = document.getElementById("risk-fill");
+        const riskMessage = document.getElementById("risk-message");
+
+        if (totalRainfall < 20) {
+            riskStatus.innerHTML = "🟢 NORMAL";
+            riskFill.style.width = "25%";
+            riskFill.style.background = "#4caf50";
+            riskMessage.innerHTML =
+                "Low rainfall is expected over the next 7 days. Current preliminary landslide risk is low.";
+        } else if (totalRainfall < 50) {
+            riskStatus.innerHTML = "🟡 WATCH";
+            riskFill.style.width = "60%";
+            riskFill.style.background = "#e6b84a";
+            riskMessage.innerHTML =
+                "Moderate rainfall is expected. Landslide-prone areas should remain under observation.";
+        } else {
+            riskStatus.innerHTML = "🔴 DANGER";
+            riskFill.style.width = "100%";
+            riskFill.style.background = "#d9534f";
+            riskMessage.innerHTML =
+                "High cumulative rainfall is expected. Vulnerable mountain regions require close monitoring.";
+        }
+    }
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, function (error) {
+                const messages = {
+                    1: "Location permission was denied. Please allow access and try again.",
+                    2: "Your location could not be determined. Please check your device GPS.",
+                    3: "The location request timed out. Please try again."
+                };
+
+                document.getElementById("location-result").textContent =
+                    messages[error.code] || "Unable to access your location.";
+            });
+        } else {
+            document.getElementById("location-result").textContent =
+                "GPS is not supported by this browser.";
+        }
+    }
+
+    async function showPosition(position) {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        const result = document.getElementById("location-result");
+        const forecastResult = document.getElementById("forecast-result");
+
+        result.textContent = "📍 Finding your location...";
+        document.querySelector(".big-temperature").textContent = "...";
+        forecastResult.textContent = "📅 Loading 7-day forecast...";
+
+        try {
+            const weatherResponse = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,weather_code`
+            );
+
+            if (!weatherResponse.ok) {
+                throw new Error("Weather lookup failed");
+            }
+
+            const weatherData = await weatherResponse.json();
+            const temperature = weatherData.current.temperature_2m;
+            const humidity = weatherData.current.relative_humidity_2m;
+            const rainfall = weatherData.current.precipitation;
+            const wind = weatherData.current.wind_speed_10m;
+            const weatherCode = weatherData.current.weather_code;
+
+            document.querySelector(".big-weather-icon").innerHTML =
+                getWeatherIcon(weatherCode);
+
+            document.querySelector(".big-temperature").textContent =
+                Math.round(temperature) + "°C";
+
+            document.getElementById("humidity-value").textContent =
+                humidity + "%";
+
+            document.getElementById("rainfall-value").textContent =
+                rainfall + " mm";
+
+            document.getElementById("wind-value").textContent =
+                Math.round(wind) + " km/h";
+
+            const forecastResponse = await fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`
+            );
+
+            if (!forecastResponse.ok) {
+                throw new Error("Forecast lookup failed");
+            }
+
+            const forecastData = await forecastResponse.json();
+            const dates = forecastData.daily.time;
+            let forecastWeatherCodes = forecastData.daily.weather_code;
+            const maxTemps = forecastData.daily.temperature_2m_max;
+            const minTemps = forecastData.daily.temperature_2m_min;
+            const rainfallData = forecastData.daily.precipitation_sum;
+
+            let totalRainfall = 0;
+
+            for (let i = 0; i < 7; i++) {
+                totalRainfall += rainfallData[i];
+            }
+
+            updateRisk(totalRainfall);
+
+            let forecastHTML = "";
+
+            for (let i = 0; i < 7; i++) {
+                forecastHTML += `
+                    <div class="forecast-card">
+                        <div class="forecast-icon">
+                            ${getWeatherIcon(forecastWeatherCodes[i])}
+                        </div>
+
+                        <h3>${new Date(dates[i]).toLocaleDateString('en-IN', {
+                            weekday: 'short'
+                        })}</h3>
+
+                        <p class="forecast-date">${dates[i]}</p>
+
+                        <div class="temperature">
+                            ${Math.round(maxTemps[i])}° / ${Math.round(minTemps[i])}°
+                        </div>
+
+                        <p>🌧️ Rainfall: ${rainfallData[i]} mm</p>
+                    </div>
+                `;
+            }
+
+            forecastResult.innerHTML = forecastHTML;
+
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+
+            if (!response.ok) {
+                throw new Error("Location lookup failed");
+            }
+
+            const data = await response.json();
+            const location = data.address || {};
+            const place = location.state
+                || location.city
+                || location.town
+                || location.village
+                || "Unknown location";
+
+            document.querySelector(".weather-location").textContent =
+                "📍 " + place;
+            result.innerHTML = "📍 Your Location: <b>" + place + "</b>";
+        } catch (error) {
+            result.textContent = "⚠️ Unable to find your location.";
+        }
+    }
+    </script>
+    </div>
+</main>
+
+    </body>
+    </html>
