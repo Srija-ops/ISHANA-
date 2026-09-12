@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISHANA | Landslide & Weather Monitoring</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo">ISHANA</div>
+
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#weather">Live Weather</a>
+            <a href="#risk">Risk Analysis</a>
+            <a href="#history">Historical Data</a>
+            <a href="#emergency">Emergency Guide</a>
+            <a href="#sos">SOS</a>
+        </div>
+    </nav>
+
+    <!-- Live Updates -->
+    <div class="updates-bar">
+        <div class="updates-title">🔴 LIVE UPDATES</div>
+
+        <div class="updates-wrapper">
+            <div class="updates-content">
+                ⚠️ Heavy rainfall reported in parts of Himachal Pradesh
+                &nbsp;&nbsp; • &nbsp;&nbsp;
+                🌧️ Rainfall levels rising in Uttarakhand
+                &nbsp;&nbsp; • &nbsp;&nbsp;
+                🏔️ Landslide risk monitoring active in Sikkim
+                &nbsp;&nbsp; • &nbsp;&nbsp;
+                🌦️ Weather data updated recently
+                &nbsp;&nbsp; • &nbsp;&nbsp;
+                ⚠️ Residents in vulnerable zones are advised to stay alert
+            </div>
+        </div>
+    </div>
+
+    <div id="alertBanner" class="alert-banner">
+        🚨 LANDSLIDE WARNING
+        <span id="alertText"></span>
+    </div>
+
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+
+           <!-- Floating Background Images -->
+           <div class="floating-images">
+
+              <img src="images/mountains.jpg"
+                  class="floating mountain-img"
+                  alt="Northern India Mountains">
+
+              <img src="images/landslide.jpg"
+                  class="floating landslide-img"
+                  alt="Landslide">
+
+              <img src="images/mountains2.jpg"
+                  class="floating mountain-img2"
+                  alt="Himalayan Mountains">
+
+           </div>
+
+        <div class="hero-content">
+            <p class="small-title">SMART DISASTER MANAGEMENT SYSTEM</p>
+
+            <h1>Protecting the<br><span>Mountain Communities</span></h1>
+
+            <p class="description">
+                ISHANA monitors weather conditions and landslide risks
+                across the mountainous regions of Northern India.
+            </p>
+
+            <div class="buttons">
+                <button type="button" class="primary-btn" id="check-risk-button">
+                    Check Risk Status
+                </button>
+                <button class="secondary-btn" onclick="window.location.href='weather.html'">View Weather</button>
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- Mountain Region Selector -->
+    <section class="region-selector">
+        <h2>📍 Select Mountain Region</h2>
+
+        <select id="locationSelect">
+            <option value="manali">Manali, Himachal Pradesh</option>
+            <option value="shimla">Shimla, Himachal Pradesh</option>
+            <option value="darjeeling">Darjeeling, West Bengal</option>
+            <option value="gangtok">Gangtok, Sikkim</option>
+            <option value="srinagar">Srinagar, Jammu &amp; Kashmir</option>
+            <option value="dehradun">Dehradun, Uttarakhand</option>
+        </select>
+
+        <p id="selectedLocation">
+            Selected location: Manali, Himachal Pradesh
+        </p>
+    </section>
+
+
+    <!-- Mountain Region Risk Map -->
+    <section class="map-section">
+        <h2>🗺️ Mountain Region Risk Map</h2>
+
+        <p>
+            Select a region to view its current weather risk.
+        </p>
+
+        <div id="riskMap"></div>
+    </section>
+
+
+    <!-- Regional Warning -->
+    <section class="location-alert">
+        <h2>📢 Regional Warning</h2>
+
+        <div id="regionalWarning">
+            🟢 No active warning for Manali.
+        </div>
+    </section>
+
+
+    <!-- Current Weather -->
+    <section class="weather-card" id="weather">
+        <h2>🌦️ Current Weather</h2>
+
+        <p>🌧️ Rainfall: <span id="rainfall">--</span> mm</p>
+
+        <p>🌡️ Temperature: <span id="temperature">--</span> °C</p>
+
+        <p>💧 Soil Moisture: <span id="soilMoisture">--</span></p>
+    </section>
+
+
+    <!-- Seven-Day Forecast -->
+    <section class="forecast-card">
+        <h2>🌦️ 7-Day Weather Forecast</h2>
+
+        <div id="forecastData">
+            Loading forecast...
+        </div>
+    </section>
+
+
+    <!-- Historical Weather Data -->
+    <section class="history-section" id="history">
+        <div class="section-heading">
+            <p class="eyebrow">15-YEAR WEATHER HISTORY</p>
+            <h2>Historical Rainfall Pattern</h2>
+            <p>Rainfall trends can help identify changing weather conditions in mountain regions.</p>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>Rainfall (mm)</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historicalData">
+                    <tr>
+                        <td colspan="2">Loading historical data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="rainfallChart"></canvas>
+        </div>
+    </section>
+
+
+    <!-- Rainfall Comparison -->
+    <section class="rainfall-comparison">
+        <h2>📊 Rainfall Comparison</h2>
+
+        <div id="rainfallComparison">
+            Calculating historical comparison...
+        </div>
+    </section>
+
+
+    <!-- Risk Dashboard -->
+    <section class="risk-dashboard" id="risk">
+        <div class="section-heading">
+            <p class="eyebrow">LANDSLIDE RISK MONITOR</p>
+            <h2>Current Risk Assessment</h2>
+            <p>Understand the conditions in your selected region.</p>
+        </div>
+
+        <div class="risk-cards">
+            <div class="risk-card">
+                <span>🌧️</span>
+                <h3>Rainfall</h3>
+                <strong id="dashboard-rainfall">-- mm</strong>
+                <p id="dashboard-rainfall-status">Waiting for weather data</p>
+            </div>
+
+            <div class="risk-card">
+                <span>🌦️</span>
+                <h3>Forecast</h3>
+                <strong>Heavy Rain</strong>
+                <p>Rain expected in the next 24 hours</p>
+            </div>
+
+            <div class="risk-card">
+                <span>⛰️</span>
+                <h3>Slope Risk</h3>
+                <strong id="dashboard-slope-risk">--</strong>
+                <p id="dashboard-slope-status">Calculating landslide possibility</p>
+            </div>
+        </div>
+
+        <div class="overall-risk">
+            <p>OVERALL LANDSLIDE RISK</p>
+            <h2>🟢 LOW RISK</h2>
+            <span>Waiting for current rainfall conditions.</span>
+        </div>
+    </section>
+
+
+    <!-- Risk Assessment -->
+    <section class="risk-assessment">
+        <h2>🚨 Landslide Risk Assessment</h2>
+
+        <div class="risk-level risk-low">
+            🟢 LOW RISK
+        </div>
+
+        <p>Rainfall: 12 mm</p>
+        <p>Soil Condition: Stable</p>
+        <p>Temperature: 18°C</p>
+
+        <div class="warning-message">
+            ✅ No immediate landslide danger detected.
+        </div>
+    </section>
+
+
+    <!-- Emergency Guide -->
+    <section class="emergency-guide" id="emergency">
+        <div class="section-heading">
+            <p class="eyebrow">EMERGENCY GUIDE</p>
+            <h2>What should you do during a landslide?</h2>
+            <p>Simple instructions to help you stay safe before, during and after a landslide.</p>
+        </div>
+
+        <div class="guide-grid">
+            <div class="guide-card">
+                <div class="guide-icon">⚠️</div>
+                <h3>Before a Landslide</h3>
+                <ul>
+                    <li>Keep emergency supplies ready.</li>
+                    <li>Know the safest evacuation route.</li>
+                    <li>Monitor Ishana alerts and weather updates.</li>
+                    <li>Avoid staying near unstable slopes.</li>
+                </ul>
+            </div>
+
+            <div class="guide-card">
+                <div class="guide-icon">🏃</div>
+                <h3>During a Landslide</h3>
+                <ul>
+                    <li>Move away from the landslide path immediately.</li>
+                    <li>Do not try to cross moving debris.</li>
+                    <li>Follow official evacuation instructions.</li>
+                    <li>Help children and elderly people if it is safe.</li>
+                </ul>
+            </div>
+
+            <div class="guide-card">
+                <div class="guide-icon">🏠</div>
+                <h3>After a Landslide</h3>
+                <ul>
+                    <li>Stay away from the affected area.</li>
+                    <li>Watch for additional landslides.</li>
+                    <li>Do not return until authorities declare it safe.</li>
+                    <li>Report blocked roads or dangerous conditions.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Safety Guidance -->
+    <section class="safety-card">
+        <h2>🛡️ What Should You Do?</h2>
+
+        <div id="safetyMessage">
+            <h3>🟢 Stay Calm</h3>
+
+            <p>
+                Current conditions appear stable.
+                Continue monitoring weather updates.
+            </p>
+
+            <ul>
+                <li>Keep your phone charged.</li>
+                <li>Keep emergency numbers available.</li>
+                <li>Stay updated with local authorities.</li>
+            </ul>
+        </div>
+    </section>
+
+
+    <!-- Safety and Evacuation -->
+    <section class="safe-area-card">
+        <h2>📍 Safety &amp; Evacuation</h2>
+
+        <div class="safe-status">
+            🟢 <strong>Know Your Safe Area</strong>
+        </div>
+
+        <p>
+            If the risk level becomes HIGH, move away from
+            unstable slopes and follow instructions from local authorities.
+        </p>
+
+        <button type="button" onclick="showSafetyInfo()">
+            📍 Find Safety Information
+        </button>
+
+        <div id="safetyInfo"></div>
+    </section>
+
+
+    <!-- Safety Checklist -->
+    <section class="safety-checklist">
+        <h2>🎒 Landslide Safety Checklist</h2>
+        <p>Keep these essentials ready before an emergency.</p>
+
+        <div class="checklist-container">
+
+            <label>
+                <input type="checkbox">
+                🔦 Flashlight
+            </label>
+
+            <label>
+                <input type="checkbox">
+                💧 Drinking Water
+            </label>
+
+            <label>
+                <input type="checkbox">
+                🥫 Emergency Food
+            </label>
+
+            <label>
+                <input type="checkbox">
+                🩹 First Aid Kit
+            </label>
+
+            <label>
+                <input type="checkbox">
+                📱 Fully Charged Phone
+            </label>
+
+            <label>
+                <input type="checkbox">
+                🔋 Power Bank
+            </label>
+
+            <label>
+                🪪 Important Documents
+            </label>
+
+            <label>
+                🧥 Warm Clothes / Blanket
+            </label>
+
+        </div>
+    </section>
+
+
+    <!-- Landslide Reporting -->
+    <section class="report-section">
+        <h2>📍 Report a Hazard</h2>
+        <p>Help us identify dangerous areas and keep communities safer.</p>
+
+        <select id="hazard-type">
+            <option value="">Select Hazard Type</option>
+            <option value="Landslide">Landslide</option>
+            <option value="Road Blockage">Road Blockage</option>
+            <option value="Falling Rocks">Falling Rocks</option>
+            <option value="Flooding">Flooding</option>
+            <option value="Other">Other</option>
+        </select>
+
+        <textarea id="hazard-description"
+            placeholder="Describe what you observed..."></textarea>
+
+        <button type="button" class="location-button" onclick="getReportLocation()">
+            📍 Use My Current Location
+        </button>
+
+        <p id="report-location-result"></p>
+
+        <button type="button" class="report-button" onclick="submitHazardReport()">
+            🚨 Submit Report
+        </button>
+
+        <p id="report-message"></p>
+    </section>
+
+
+    <!-- Recent Reports -->
+    <section class="recent-reports">
+        <h2>📋 Recent Hazard Reports</h2>
+        <div id="reports-container">
+            <p>No reports submitted yet.</p>
+        </div>
+    </section>
+
+
+    <!-- Emergency Contacts -->
+    <section class="emergency-contacts">
+        <h2>📞 Emergency Help</h2>
+
+        <div class="contact-container">
+
+            <div class="contact-card">
+                <h3>🚨 Emergency</h3>
+                <p>For immediate emergency assistance</p>
+                <a href="tel:112">Call 112</a>
+            </div>
+
+            <div class="contact-card">
+                <h3>🚑 Ambulance</h3>
+                <p>For medical emergencies</p>
+                <a href="tel:108">Call 108</a>
+            </div>
+
+            <div class="contact-card">
+                <h3>🚒 Fire &amp; Rescue</h3>
+                <p>For fire and rescue emergencies</p>
+                <a href="tel:101">Call 101</a>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- SOS Assistance -->
+    <section class="sos-section" id="sos">
+        <div class="sos-content">
+            <p class="eyebrow">EMERGENCY ASSISTANCE</p>
+            <h2>Need immediate help?</h2>
+            <p>
+                If you are in danger, contact emergency services and move
+                to a safer location if possible.
+            </p>
+
+            <div class="sos-buttons">
+                <a href="tel:112" class="sos-btn">
+                    🚨 Call Emergency Services
+                </a>
+
+                <button type="button" class="location-btn" onclick="getLocation()">
+                    📍 Share My Location
+                </button>
+            </div>
+
+            <p id="location-result" class="location-result"></p>
+        </div>
+    </section>
+
+
+    <!-- Emergency Help -->
+    <section class="emergency-card">
+        <h2>🆘 Emergency Help</h2>
+
+        <p>If you are in immediate danger, contact emergency services.</p>
+
+        <div class="emergency-buttons">
+            <a href="tel:112" class="emergency-button">
+                📞 Call 112
+            </a>
+
+            <a href="tel:108" class="emergency-button">
+                🚑 Ambulance 108
+            </a>
+        </div>
+
+        <div class="emergency-info">
+            <h3>⚠️ During a Landslide</h3>
+
+            <ul>
+                <li>Move away from steep slopes and unstable ground.</li>
+                <li>Do not cross roads covered by mud, rocks or debris.</li>
+                <li>Stay away from rivers and low-lying areas.</li>
+                <li>Follow evacuation instructions from authorities.</li>
+                <li>Do not return to an affected area until it is declared safe.</li>
+            </ul>
+        </div>
+    </section>
+    <!-- Warning Section -->
+    <section class="warning">
+
+        <div>
+            <h2>⚠️ Warning System</h2>
+            <p>
+                ISHANA can notify residents when environmental
+                conditions indicate an increased possibility of landslides.
+            </p>
+        </div>
+
+        <button>View Alerts</button>
+
+    </section>
+
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <h2>ISHANA</h2>
+        <p>Early warning. Safer communities.</p>
+        <p>Disaster information &amp; landslide risk awareness system.</p>
+
+        <div class="footer-line"></div>
+
+        <small>© 2026 Ishana. Built for safer mountain communities.</small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
